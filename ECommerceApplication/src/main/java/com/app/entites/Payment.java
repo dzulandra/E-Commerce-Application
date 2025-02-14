@@ -9,6 +9,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,4 +32,11 @@ public class Payment {
 	@Size(min = 4, message = "Payment method must contain atleast 4 characters")
 	private String paymentMethod;
 
+	@NotBlank(message = "Card number is required" )
+	@Pattern(regexp = "\\d{16}", message = "Card number must be 16 digits long")
+	private String cardNumber;
+
+	@NotBlank(message = "CVC is required")
+	@Pattern(regexp = "\\d{3}", message = "CVC must be 3 digits long")
+	private String cvc;
 }

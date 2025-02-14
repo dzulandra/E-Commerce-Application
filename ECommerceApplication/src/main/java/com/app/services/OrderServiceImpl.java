@@ -24,6 +24,7 @@ import com.app.exceptions.ResourceNotFoundException;
 import com.app.payloads.OrderDTO;
 import com.app.payloads.OrderItemDTO;
 import com.app.payloads.OrderResponse;
+import com.app.payloads.PaymentCreditCardDTO;
 import com.app.repositories.CartItemRepo;
 import com.app.repositories.CartRepo;
 import com.app.repositories.OrderItemRepo;
@@ -65,12 +66,15 @@ public class OrderServiceImpl implements OrderService {
 	public ModelMapper modelMapper;
 
 	@Override
-	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod) {
+	public OrderDTO placeOrder(String email, Long cartId, String paymentMethod,PaymentCreditCardDTO paymentDTO) {
 
 		Cart cart = cartRepo.findCartByEmailAndCartId(email, cartId);
 
 		if (cart == null) {
 			throw new ResourceNotFoundException("Cart", "cartId", cartId);
+		}
+		if (!"CREDIT_CARD".equalsIgnoreCase(paymentMethod)){
+			throw new APIException("Only Credit Card payment is allowed");
 		}
 
 		Order order = new Order();
@@ -124,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
 		});
 
 		OrderDTO orderDTO = modelMapper.map(savedOrder, OrderDTO.class);
-		
+
 		orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
 
 		return orderDTO;
@@ -170,20 +174,20 @@ public class OrderServiceImpl implements OrderService {
 
 		List<OrderDTO> orderDTOs = orders.stream().map(order -> modelMapper.map(order, OrderDTO.class))
 				.collect(Collectors.toList());
-		
+
 		if (orderDTOs.size() == 0) {
 			throw new APIException("No orders placed yet by the users");
 		}
 
 		OrderResponse orderResponse = new OrderResponse();
-		
+
 		orderResponse.setContent(orderDTOs);
 		orderResponse.setPageNumber(pageOrders.getNumber());
 		orderResponse.setPageSize(pageOrders.getSize());
 		orderResponse.setTotalElements(pageOrders.getTotalElements());
 		orderResponse.setTotalPages(pageOrders.getTotalPages());
 		orderResponse.setLastPage(pageOrders.isLast());
-		
+
 		return orderResponse;
 	}
 
